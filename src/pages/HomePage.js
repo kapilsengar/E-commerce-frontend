@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "./../components/Layout/Layout";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../AxiosInstance/Axios.instance";
 import { Checkbox, Radio } from "antd";
 import { Prices } from "../components/Prices";
 import { useCart } from "../context/cart";
@@ -22,7 +22,7 @@ const HomePage = () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
       if (data?.success) {
-        // console.log(data.categories,'home page 25');
+        console.log(data.categories,'home page 25');
         setCategories(data?.category);
       }
     } catch (error) {

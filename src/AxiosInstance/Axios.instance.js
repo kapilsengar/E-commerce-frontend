@@ -1,7 +1,7 @@
 // src/apiService.js
 import axios from 'axios';
 
-const apiUrl = process.env.REACT_APP_API;
+const apiUrl = "https://e-commerce-backend-hhie.onrender.com";
 
 const apiService = axios.create({
   baseURL: apiUrl,
