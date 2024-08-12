@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "./../components/Layout/Layout";
 import { useNavigate } from "react-router-dom";
-import axios from "../AxiosInstance/Axios.instance";
+import apiService from "../AxiosInstance/Axios.instance";
 import { Checkbox, Radio } from "antd";
 import { Prices } from "../components/Prices";
 import { useCart } from "../context/cart";
@@ -16,13 +16,15 @@ const HomePage = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  // console.log(÷,'fghjk');
+  
 
   //get all cat
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get("/api/v1/category/get-category");
+      const { data } = await apiService.get("/api/v1/category/get-category");
       if (data?.success) {
-        console.log(data.categories,'home page 25');
+        console.log(data,'home page 25');
         setCategories(data?.category);
       }
     } catch (error) {
@@ -38,7 +40,7 @@ const HomePage = () => {
   const getAllProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
+      const { data } = await apiService.get(`/api/v1/product/product-list/${page}`);
       setLoading(false);
       setProducts(data.products);
     } catch (error) {
@@ -50,7 +52,7 @@ const HomePage = () => {
   //getTOtal COunt
   const getTotal = async () => {
     try {
-      const { data } = await axios.get("/api/v1/product/product-count");
+      const { data } = await apiService.get("/api/v1/product/product-count");
       setTotal(data?.total);
     } catch (error) {
       console.log(error);
@@ -65,7 +67,7 @@ const HomePage = () => {
   const loadMore = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
+      const { data } = await apiService.get(`/api/v1/product/product-list/${page}`);
       setLoading(false);
       setProducts([...products, ...data?.products]);
     } catch (error) {
@@ -95,7 +97,7 @@ const HomePage = () => {
   //get filterd product
   const filterProduct = async () => {
     try {
-      const { data } = await axios.post("/api/v1/product/product-filters", {
+      const { data } = await apiService.post("/api/v1/product/product-filters", {
         checked,
         radio,
       });
