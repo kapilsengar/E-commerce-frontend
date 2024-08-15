@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Layout from "./../components/Layout/Layout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,6 +6,8 @@ import { Checkbox, Radio } from "antd";
 import { Prices } from "../components/Prices";
 import { useCart } from "../context/cart";
 import toast from "react-hot-toast";
+import url from "../backendUrl";
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useCart();
@@ -16,67 +18,83 @@ const HomePage = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  // console.log(÷,'fghjk');
-  
 
-  //get all cat
-  const getAllCategory = async () => {
+  // console.log(url, "asdfghjk");
+
+  // Get all categories
+  const getAllCategory = useCallback(async () => {
     try {
-      const { data } = await axios.get("/api/v1/category/get-category");
+      const { data } = await axios.get(url+"/api/v1/category/get-category");
       if (data?.success) {
-        console.log(data,'home page 25');
+        // console.log(data.category, "home page 25");
         setCategories(data?.category);
       }
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
+
+  // Get total count
+  const getTotal = useCallback(async () => {
+    try {
+      const { data } = await axios.get(url+"/api/v1/product/product-count");
+      setTotal(data?.total);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   useEffect(() => {
     getAllCategory();
     getTotal();
-  }, []);
-  //get products
-  const getAllProducts = async () => {
+  }, [getAllCategory, getTotal]);
+
+  // Get all products
+  const getAllProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
+      const { data } = await axios.get(`${url}/api/v1/product/product-list/${page}`);
       setLoading(false);
+      console.log(data,"asdfghj");
+      
       setProducts(data.products);
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
-  };
-
-  //getTOtal COunt
-  const getTotal = async () => {
-    try {
-      const { data } = await axios.get("/api/v1/product/product-count");
-      setTotal(data?.total);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    if (page === 1) return;
-    loadMore();
   }, [page]);
-  //load more
-  const loadMore = async () => {
+
+  // Load more products
+  const loadMore = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
+      const { data } = await axios.get(`${url}/api/v1/product/product-list/${page}`);
       setLoading(false);
       setProducts([...products, ...data?.products]);
     } catch (error) {
       console.log(error);
       setLoading(false);
     }
-  };
+  }, [page, products]);
 
-  // filter by cat
+  useEffect(() => {
+    if (page === 1) return;
+    loadMore();
+  }, [page, loadMore]);
+
+  // Filter products by category or price
+  const filterProduct = useCallback(async () => {
+    try {
+      const { data } = await axios.post(url+"/api/v1/product/product-filters", {
+        checked,
+        radio,
+      });
+      setProducts(data?.products);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [checked, radio]);
+
   const handleFilter = (value, id) => {
     let all = [...checked];
     if (value) {
@@ -86,26 +104,15 @@ const HomePage = () => {
     }
     setChecked(all);
   };
+
   useEffect(() => {
     if (!checked.length || !radio.length) getAllProducts();
-  }, [checked.length, radio.length]);
+  }, [checked.length, radio.length, getAllProducts]);
 
   useEffect(() => {
     if (checked.length || radio.length) filterProduct();
-  }, [checked, radio]);
+  }, [checked, radio, filterProduct]);
 
-  //get filterd product
-  const filterProduct = async () => {
-    try {
-      const { data } = await axios.post("/api/v1/product/product-filters", {
-        checked,
-        radio,
-      });
-      setProducts(data?.products);
-    } catch (error) {
-      console.log(error);
-    }
-  };
   return (
     <Layout title={"ALl Products - Best offers "}>
       <div className="container-fluid row mt-3">
@@ -121,7 +128,7 @@ const HomePage = () => {
               </Checkbox>
             ))}
           </div>
-          {/* price filter */}
+          {/* Price filter */}
           <h4 className="text-center mt-4">Filter By Price</h4>
           <div className="d-flex flex-column">
             <Radio.Group onChange={(e) => setRadio(e.target.value)}>
@@ -157,26 +164,26 @@ const HomePage = () => {
                     {p.description.substring(0, 30)}...
                   </p>
                   <p className="card-text"> ₹ {p.price}</p>
-                  <div className="d-flex"> 
-                  <button
-                    className="btn btn-primary ms-1"
-                    onClick={() => navigate(`/product/${p.slug}`)}
-                  >
-                    More Details
-                  </button>
-                  <button
-                    className="btn btn-secondary ms-1"
-                    onClick={() => {
-                      setCart([...cart, p]);
-                      localStorage.setItem(
-                        "cart",
-                        JSON.stringify([...cart, p])
-                      );
-                      toast.success("Item Added to cart");
-                    }}
-                  >
-                    ADD TO CART
-                  </button>
+                  <div className="d-flex">
+                    <button
+                      className="btn btn-primary ms-1"
+                      onClick={() => navigate(`/product/${p.slug}`)}
+                    >
+                      More Details
+                    </button>
+                    <button
+                      className="btn btn-secondary ms-1"
+                      onClick={() => {
+                        setCart([...cart, p]);
+                        localStorage.setItem(
+                          "cart",
+                          JSON.stringify([...cart, p])
+                        );
+                        toast.success("Item Added to cart");
+                      }}
+                    >
+                      ADD TO CART
+                    </button>
                   </div>
                 </div>
               </div>
@@ -191,7 +198,7 @@ const HomePage = () => {
                   setPage(page + 1);
                 }}
               >
-                {loading ? "Loading ..." : "Loadmore"}
+                {loading ? "Loading ..." : "Load more"}
               </button>
             )}
           </div>
@@ -200,5 +207,4 @@ const HomePage = () => {
     </Layout>
   );
 };
-
 export default HomePage;

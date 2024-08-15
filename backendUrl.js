@@ -1,1 +1,0 @@
-export const url = "https://e-commerce-backend-hhie.onrender.com";

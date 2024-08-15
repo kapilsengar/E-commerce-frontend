@@ -4,6 +4,7 @@ import axios from "axios";
 import { useCart } from "../context/cart";
 import addToCart from "../Actions/Actions.product";
 import { useParams, useNavigate } from "react-router-dom";
+import url from "../backendUrl";
 const ProductDetails = () => {
   const {slug} = useParams();
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const ProductDetails = () => {
   const getProduct = async () => {
     try {
       const { data } = await axios.get(
-        `/api/v1/product/get-product/${slug}`
+        `${url}/api/v1/product/get-product/${slug}`
       );
       setProduct(data?.product);
       getSimilarProduct(data?.product._id, data?.product.category._id);
@@ -31,7 +32,7 @@ const ProductDetails = () => {
   const getSimilarProduct = async (pid, cid) => {
     try {
       const { data } = await axios.get(
-        `/api/v1/product/related-product/${pid}/${cid}`
+        `${url}/api/v1/product/related-product/${pid}/${cid}`
       );
       setRelatedProducts(data?.products);
     } catch (error) {

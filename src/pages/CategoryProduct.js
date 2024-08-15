@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout/Layout";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import url from "../backendUrl";
 const CategoryProduct = () => {
   const params = useParams();
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const CategoryProduct = () => {
   const getPrductsByCat = async () => {
     try {
       const { data } = await axios.get(
-        `/api/v1/product/product-category/${params.slug}`
+        `${url}/api/v1/product/product-category/${params.slug}`
       );
       setProducts(data?.products);
       setCategory(data?.category);
@@ -49,15 +50,15 @@ const CategoryProduct = () => {
                     </p>
                     <p className="card-text"> ₹ {p.price}</p>
                     <div className="d-flex">
-                    <button
-                      className="btn btn-primary ms-1"
-                      onClick={() => navigate(`/product/${p.slug}`)}
-                    >
-                      More Details
-                    </button>
-                    <button className="btn btn-secondary ms-1">
-                      ADD TO CART
-                    </button>
+                      <button
+                        className="btn btn-primary ms-1"
+                        onClick={() => navigate(`/product/${p.slug}`)}
+                      >
+                        More Details
+                      </button>
+                      <button className="btn btn-secondary ms-1">
+                        ADD TO CART
+                      </button>
                     </div>
                   </div>
                 </div>

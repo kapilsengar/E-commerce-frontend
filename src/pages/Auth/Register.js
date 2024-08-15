@@ -3,6 +3,7 @@ import Layout from "./../../components/Layout/Layout";
 import { useNavigate } from "react-router-dom";
 import "../../styles/AuthStyles.css";
 import axios from "axios";
+import url from "../../backendUrl";
 
 
 
@@ -20,7 +21,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/v1/auth/register", {
+      const res = await axios.post(url+"/api/v1/auth/register", {
         name,
         email,
         password,
