@@ -55,9 +55,8 @@ const HomePage = () => {
       setLoading(true);
       const { data } = await axios.get(`${url}/api/v1/product/product-list/${page}`);
       setLoading(false);
-      console.log(data,"asdfghj");
-      
       setProducts(data.products);
+      console.log(`${url}/api/v1/product/product-photo/${data.products[0]._id}`,"asdfgh");
     } catch (error) {
       setLoading(false);
       console.log(error);
@@ -151,10 +150,11 @@ const HomePage = () => {
         <div className="col-md-9 offset-1">
           <h1 className="text-center">All Products</h1>
           <div className="d-flex flex-wrap">
-            {products?.map((p) => (
+            {
+            products?.map((p) => (
               <div className="card m-2" style={{ width: "18rem" }} key={p._id}>
                 <img
-                  src={`/api/v1/product/product-photo/${p._id}`}
+                  src={`${url}/api/v1/product/product-photo/${p._id}`}
                   className="card-img-top"
                   alt={p.name}
                 />
