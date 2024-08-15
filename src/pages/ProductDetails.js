@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Layout from "./../components/Layout/Layout";
 import axios from "axios";
 import { useCart } from "../context/cart";
@@ -6,30 +6,13 @@ import addToCart from "../Actions/Actions.product";
 import { useParams, useNavigate } from "react-router-dom";
 import url from "../backendUrl";
 const ProductDetails = () => {
-  const {slug} = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
-  const[cart,setCart]=useCart();
+  const [cart, setCart] = useCart();
   const [product, setProduct] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
-
-  //initalp details
-  useEffect(() => {
-    if (slug) getProduct();
-  }, [slug]);
-  //getProduct
-  const getProduct = async () => {
-    try {
-      const { data } = await axios.get(
-        `${url}/api/v1/product/get-product/${slug}`
-      );
-      setProduct(data?.product);
-      getSimilarProduct(data?.product._id, data?.product.category._id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  //get similar product
-  const getSimilarProduct = async (pid, cid) => {
+  // Memoize getSimilarProduct using useCallback
+  const getSimilarProduct = useCallback(async (pid, cid) => {
     try {
       const { data } = await axios.get(
         `${url}/api/v1/product/related-product/${pid}/${cid}`
@@ -38,7 +21,28 @@ const ProductDetails = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
+  // Memoize getProduct using useCallback
+  const getProduct = useCallback(async () => {
+    try {
+      const { data } = await axios.get(
+        `${url}/api/v1/product/get-product/${slug}`
+      );
+      setProduct(data?.product);
+      if (data?.product) {
+        getSimilarProduct(data?.product._id, data?.product.category._id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [slug, getSimilarProduct]);
+
+  // Fetch product details when slug changes
+  useEffect(() => {
+    if (slug) {
+      getProduct();
+    }
+  }, [slug, getProduct]); // Add getProduct to the dependency array
   return (
     <Layout>
       <div className="row container mt-2">
@@ -57,7 +61,13 @@ const ProductDetails = () => {
           <h6>Description : {product.description}</h6>
           <h6>Price : {product.price}</h6>
           <h6>Category : {product?.category?.name}</h6>
-          <button class="btn btn-secondary ms-1" onClick={()=>addToCart({slug,cart,setCart})}> ADD TO CART</button>
+          <button
+            class="btn btn-secondary ms-1"
+            onClick={() => addToCart({ slug, cart, setCart })}
+          >
+            {" "}
+            ADD TO CART
+          </button>
         </div>
       </div>
       <hr />
@@ -79,13 +89,18 @@ const ProductDetails = () => {
                 <p className="card-text">{p.description.substring(0, 30)}...</p>
                 <p className="card-text"> $ {p.price}</p>
                 <div className="d-flex">
-                <button
-                  className="btn btn-primary ms-1"
-                  onClick={() => navigate(`/product/${p.slug}`)}
-                >
-                  More Details
-                </button>
-                <button class="btn btn-secondary ms-1" onClick={()=>addToCart({slug,cart,setCart})}>ADD TO CART</button>
+                  <button
+                    className="btn btn-primary ms-1"
+                    onClick={() => navigate(`/product/${p.slug}`)}
+                  >
+                    More Details
+                  </button>
+                  <button
+                    class="btn btn-secondary ms-1"
+                    onClick={() => addToCart({ slug, cart, setCart })}
+                  >
+                    ADD TO CART
+                  </button>
                 </div>
               </div>
             </div>
